@@ -51,7 +51,7 @@ namespace smce {
     return it->root_dir;
 }
 
-[[nodiscard]] bool VirtualAnalogDriver::exists() noexcept { return m_bdat && m_idx < m_bdat->pins.size(); }
+const [[nodiscard]] bool VirtualAnalogDriver::exists() noexcept { return m_bdat && m_idx < m_bdat->pins.size(); }
 
 [[nodiscard]] bool VirtualAnalogDriver::can_read() noexcept { return exists() && m_bdat->pins[m_idx].can_analog_read; }
 

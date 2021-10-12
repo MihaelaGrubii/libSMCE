@@ -143,16 +143,16 @@ Toolchain::Toolchain(stdfs::path resources_dir) noexcept : m_res_dir{std::move(r
     m_build_log.reserve(4096);
 }
 
+std::error_code create_directory_without_ec(Sketch& sketch, error_code ec) noexcept{
+    stdfs::create_directories(sketch.m_tmpdir, ec);
+    if (ec)
+        return ec;
+}
 std::error_code Toolchain::do_configure(Sketch& sketch) noexcept {
     const auto sketch_hexid = sketch.m_uuid.to_hex();
     sketch.m_tmpdir = this->m_res_dir / "tmp" / sketch_hexid;
+    create_directory_without_ec(sketch, std::error_code ec);
 
-    {
-        std::error_code ec;
-        stdfs::create_directories(sketch.m_tmpdir, ec);
-        if (ec)
-            return ec;
-    }
 
 #if !BOOST_OS_WINDOWS
     const char* const generator_override = std::getenv("CMAKE_GENERATOR");
@@ -271,23 +271,25 @@ std::error_code Toolchain::do_build(Sketch& sketch) noexcept {
     }
     bp::ipstream cmake_out;
     // clang-format off
-    const int cmres = bp::system(
+    bp::child cmake_child{
         m_cmake_path,
         "--version",
         bp::std_out > cmake_out
 #if BOOST_OS_WINDOWS
         , bp::windows::create_no_window
 #endif
-    );
+    };
     // clang-format on
 
-    if (cmres != 0)
-        return toolchain_error::cmake_failing;
-
     std::string line;
-    std::getline(cmake_out, line);
-    if (!line.starts_with("cmake"))
-        return toolchain_error::cmake_unknown_output;
+    if (cmake_child.running() && std::getline(cmake_out, line) && !line.empty() && !line.starts_with("cmake")) {
+            cmake_child.join();
+            return toolchain_error::cmake_unknown_output;
+    }
+
+    cmake_child.join();
+    if (cmake_child.native_exit_code() != 0)
+        return toolchain_error::cmake_failing;
 
     return {};
 }

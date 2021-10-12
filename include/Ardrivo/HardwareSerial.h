@@ -25,6 +25,14 @@
 #include "SMCE_dll.hpp"
 #include "Stream.h"
 
+enum class HardwareSerial {
+    SERIAL_5N1 = 0x00,
+    SERIAL_6N1 = 0x02,
+    SERIAL_7N1 = 0x04,
+    SERIAL_8N1 = 0x06,
+    SERIAL_5N2 = 0x08
+};
+
 #define SERIAL_5N1 0x00
 #define SERIAL_6N1 0x02
 #define SERIAL_7N1 0x04
@@ -49,6 +57,8 @@
 #define SERIAL_6O2 0x3A
 #define SERIAL_7O2 0x3C
 #define SERIAL_8O2 0x3E
+
+
 
 struct SMCE_HardwareSerialImpl;
 struct SMCE__DLL_RT_API HardwareSerial : Stream {

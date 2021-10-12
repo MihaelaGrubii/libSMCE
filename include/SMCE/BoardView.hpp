@@ -30,7 +30,7 @@ namespace smce {
 /**
  * Analog driver for a GPIO pin
  **/
-class SMCE_API VirtualAnalogDriver {
+class SMCE_API VirtualAnalogDriver{
     friend class VirtualPin;
     BoardData* m_bdat;
     std::size_t m_idx;
